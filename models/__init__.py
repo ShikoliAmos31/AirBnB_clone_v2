@@ -1,11 +1,13 @@
 #!/usr/bin/python3
-"""
-Initialization file for the models module.
-"""
+from os import getenv
+from models.engine.file_storage import FileStorage
+from models.engine.db_storage import DBStorage
 
-from .engine import storage
-from .base_model import BaseModel
-from models.user import User
+# Determine storage type based on environment variable
+if getenv("HBNB_TYPE_STORAGE") == "db":
+    storage = DBStorage()
+else:
+    storage = FileStorage()
 
+# Reload the storage
 storage.reload()
-

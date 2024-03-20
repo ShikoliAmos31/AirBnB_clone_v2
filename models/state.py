@@ -1,14 +1,21 @@
 #!/usr/bin/python3
-"""This module contains the State class."""
-from models.base_model import BaseModel
+from models.base_model import BaseModel, Base
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String
 
+class State(BaseModel, Base):
+    """
+    State class representation
+    """
+    __tablename__ = "states"
 
-class State(BaseModel):
-    """State class that inherits from BaseModel."""
+    name = Column(String(128), nullable=False)
+    cities_relation = relationship("City", cascade='all, delete, delete-orphan', backref="state")
 
-    name = ""
-
-    def __init__(self, *args, **kwargs):
-        """Initialize State class."""
-        super().__init__(*args, **kwargs)
-
+    @property
+    def cities(self):
+        """
+        Getter attribute cities that returns the list of City instances
+        with state_id equals to the current State.id
+        """
+        return [city for city in self.cities_relation]
