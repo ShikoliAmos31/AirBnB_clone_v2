@@ -84,17 +84,46 @@ class HBNBCommand(cmd.Cmd):
         return True
 
     def do_create(self, arg):
-        """Usage: create <class>
-        Create a new class instance and print its id.
+        """Usage: create <Class name> <param 1> <param 2> <param 3>...
+        Create a new class instance with given parameters and print its id.
         """
-        argl = parse(arg)
-        if len(argl) == 0:
+        arg_parts = parse(arg)
+        if len(arg_parts) == 0:
             print("** class name missing **")
-        elif argl[0] not in HBNBCommand.__classes:
+            return
+        class_name = arg_parts[0]
+        if class_name not in HBNBCommand.__classes:
             print("** class doesn't exist **")
-        else:
-            print(eval(argl[0])().id)
-            storage.save()
+            return
+
+        # Extracting parameters from arg_parts
+        params = {}
+        for part in arg_parts[1:]:
+            key_value = part.split("=")
+            if len(key_value) != 2:
+                continue
+            key, value = key_value
+            # Replacing underscores with spaces
+            value = value.replace('_', ' ')
+            # Checking value type
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            elif '.' in value:
+                try:
+                    value = float(value)
+                except ValueError:
+                    continue
+            else:
+                try:
+                    value = int(value)
+                except ValueError:
+                    continue
+            params[key] = value
+
+        # Creating the instance and printing its id
+        new_instance = eval(class_name)(**params)
+        print(new_instance.id)
+        storage.save()
 
     def do_show(self, arg):
         """Usage: show <class> <id> or <class>.show(<id>)
@@ -163,7 +192,7 @@ class HBNBCommand(cmd.Cmd):
         Update a class instance of a given id by adding or updating
         a given attribute key/value pair or dictionary."""
         argl = parse(arg)
-        objdict = storage.all()
+                objdict = storage.all()
 
         if len(argl) == 0:
             print("** class name missing **")
