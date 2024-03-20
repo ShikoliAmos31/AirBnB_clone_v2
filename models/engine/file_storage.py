@@ -1,43 +1,71 @@
 #!/usr/bin/python3
-"""This module contains the FileStorage class."""
+"""This is the file storage class for AirBnB"""
 import json
+import shlex
 
 
 class FileStorage:
-    """FileStorage class for serializing and deserializing instances."""
-
+    """This class serializes instances to a JSON file and
+    deserializes JSON file to instances
+    Attributes:
+        __file_path: path to the JSON file
+        __objects: objects will be stored
+    """
     __file_path = "file.json"
     __objects = {}
 
-    def all(self):
-        """Return the dictionary __objects."""
-        return FileStorage.__objects
+    def all(self, cls=None):
+        """returns a dictionary
+        Return:
+            returns a dictionary of __object
+        """
+        if cls:
+            dic = {}
+            for key, obj in self.__objects.items():
+                if isinstance(obj, cls):
+                    dic[key] = obj
+            return dic
+        else:
+            return self.__objects
 
     def new(self, obj):
-        """Set in __objects the obj with key <obj class name>.id."""
-        key = "{}.{}".format(obj.__class__.__name__, obj.id)
-        FileStorage.__objects[key] = obj
+        """sets __object to given obj
+        Args:
+            obj: given object
+        """
+        if obj:
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+            self.__objects[key] = obj
 
     def save(self):
-        """Serialize __objects to the JSON file."""
-        new_dict = {}
-        for key, value in FileStorage.__objects.items():
-            new_dict[key] = value.to_dict()
-        with open(FileStorage.__file_path, mode='w', encoding='utf-8') as file:
-            json.dump(new_dict, file)
+        """serialize the file path to JSON file path
+        """
+        my_dict = {}
+        for key, value in self.__objects.items():
+            my_dict[key] = value.to_dict()
+        with open(self.__file_path, 'w', encoding="UTF-8") as f:
+            json.dump(my_dict, f)
 
     def reload(self):
-        """Deserialize the JSON file to __objects (only if the file exists)."""
+        """serialize the file path to JSON file path
+        """
         try:
-            with open(FileStorage.__file_path, mode='r', encoding='utf-8') as file:
-                data = json.load(file)
-                for key, value in data.items():
-                    class_name, obj_id = key.split('.')
-                    module_name = class_name.lower()
-                    module = __import__('models.' + module_name, fromlist=[class_name])
-                    class_ = getattr(module, class_name)
-                    instance = class_(**value)
-                    self.new(instance)
+            with open(self.__file_path, 'r', encoding="UTF-8") as f:
+                for key, value in json.load(f).items():
+                    class_name, obj_id = key.split(".")
+                    self.__objects[key] = eval(class_name)(**value)
         except FileNotFoundError:
             pass
 
+    def delete(self, obj=None):
+        """ delete an existing element
+        """
+        if obj:
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+            if key in self.__objects:
+                del self.__objects[key]
+
+    def close(self):
+        """ calls reload()
+        """
+        self.reload()
