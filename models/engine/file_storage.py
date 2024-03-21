@@ -1,6 +1,13 @@
 #!/usr/bin/python3
 """This is the file storage class for AirBnB"""
 import json
+from models.base_model import BaseModel
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 import shlex
 
 
@@ -19,12 +26,15 @@ class FileStorage:
         Return:
             returns a dictionary of __object
         """
+        dic = {}
         if cls:
-            dic = {}
-            for key, obj in self.__objects.items():
-                if isinstance(obj, cls):
-                    dic[key] = obj
-            return dic
+            dictionary = self.__objects
+            for key in dictionary:
+                partition = key.replace('.', ' ')
+                partition = shlex.split(partition)
+                if (partition[0] == cls.__name__):
+                    dic[key] = self.__objects[key]
+            return (dic)
         else:
             return self.__objects
 
@@ -51,9 +61,9 @@ class FileStorage:
         """
         try:
             with open(self.__file_path, 'r', encoding="UTF-8") as f:
-                for key, value in json.load(f).items():
-                    class_name, obj_id = key.split(".")
-                    self.__objects[key] = eval(class_name)(**value)
+                for key, value in (json.load(f)).items():
+                    value = eval(value["__class__"])(**value)
+                    self.__objects[key] = value
         except FileNotFoundError:
             pass
 
@@ -62,11 +72,9 @@ class FileStorage:
         """
         if obj:
             key = "{}.{}".format(type(obj).__name__, obj.id)
-            if key in self.__objects:
-                del self.__objects[key]
+            del self.__objects[key]
 
     def close(self):
         """ calls reload()
         """
         self.reload()
-
