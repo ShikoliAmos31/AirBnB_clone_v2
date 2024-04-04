@@ -526,5 +526,4 @@ ubuntu@89-web-01:~/$
 Repo:
 
 GitHub repository: AirBnB_clone_v2
-File: 101-setup_web_static.pp
  
